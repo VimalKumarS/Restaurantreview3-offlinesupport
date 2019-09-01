@@ -1,0 +1,23 @@
+{
+  "name": "mws-restaurant-stage-1-master",
+  "version": "1.0.0",
+  "description": "--- #### _Three Stage Course Material Project - Restaurant Reviews_",
+  "main": "sw.js",
+  "dependencies": {
+    "idb": "^4.0.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VimalKumarS/RestaurantReviews-1.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VimalKumarS/RestaurantReviews-1/issues"
+  },
+  "homepage": "https://github.com/VimalKumarS/RestaurantReviews-1#readme"
+}
