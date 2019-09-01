@@ -243,7 +243,7 @@ nav h1 a {
   font-size: 2.em;
   font-weight: 200;
   letter-spacing: 0;
-  margin: 55px 0 10px;
+  /* margin: 55px 0 10px; */
   text-transform: uppercase;
   line-height: 1.1;
 }
@@ -326,7 +326,30 @@ nav h1 a {
 #restaurant-hours td {
   color: #666;
 }
+.restaurant-header{
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  margin: 55px 0 10px;
+}
 
+.restaurant-header .star {
+  font-size: 2em;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.restaurant-header .star:hover {
+  color: #f58500;
+  cursor: pointer;
+}
+
+.star-selected{
+  color: #f58500;
+}
+.star-unselected{
+  color:  #666;
+}
 
 .add-review-container .add-review-form {
   display: flex;

@@ -4,8 +4,8 @@ var newMap;
 /**
  * Initialize map as soon as the page is loaded.
  */
-document.addEventListener('DOMContentLoaded', (event) => {  
-  
+document.addEventListener('DOMContentLoaded', (event) => {
+
   initMap();
 });
 
@@ -16,7 +16,7 @@ initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
       console.error(error);
-    } else {      
+    } else {
       self.newMap = L.map('map', {
         center: [restaurant.latlng.lat, restaurant.latlng.lng],
         zoom: 16,
@@ -28,14 +28,14 @@ initMap = () => {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        id: 'mapbox.streets'    
+        id: 'mapbox.streets'
       }).addTo(newMap);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
   });
-}  
- 
+}
+
 /* window.initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
@@ -91,6 +91,14 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   image.className = 'restaurant-img'
   image.alt = 'Image of ' + restaurant.name + ' restaurant';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  const favBtn = document.getElementById("restaurant-markfav");
+  if (restaurant.is_favorite && restaurant.is_favorite === "true") {
+    favBtn.classList.add("star-selected");
+    favBtn.setAttribute('data-fav', 'true');
+  } else {
+    favBtn.classList.add("star-unselected");
+    favBtn.setAttribute('data-fav', 'false');
+  }
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -124,18 +132,19 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 }
 
 
-fillReviews=()=>{
+fillReviews = () => {
   const id = parseInt(getParameterByName("id"))
 
-  DBHelper.fetchReviews(id,(err,reviews)=>{
-    if(err || !reviews ){
+  DBHelper.fetchReviews(id, (err, reviews) => {
+    if (err || !reviews) {
       console.error(err)
+      fillReviewsHTML()
       return;
     }
     fillReviewsHTML(reviews)
   })
 
-  
+
 }
 
 /**
@@ -187,7 +196,7 @@ createReviewHTML = (review) => {
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */
-fillBreadcrumb = (restaurant=self.restaurant) => {
+fillBreadcrumb = (restaurant = self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
@@ -211,25 +220,25 @@ getParameterByName = (name, url) => {
 }
 
 const reviewForm = document.querySelector('#add-review-form');
-reviewForm.addEventListener("submit",(event)=>{
+reviewForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const id = getParameterByName("id")
-  const name= reviewForm.querySelector('#name').value
+  const name = reviewForm.querySelector('#name').value
   const comment = reviewForm.querySelector('#review-comment').value
   const rating = reviewForm.querySelector('#rating');
   DBHelper.addReview({
-    "restaurant_id":parseInt(id),
-    "name":name,
-    "comments":comment,
-    "rating":rating.options[rating.selectedIndex].value,
-  },err=>{
-      console.log(err)
-  }).then(data=>{
+    "restaurant_id": parseInt(id),
+    "name": name,
+    "comments": comment,
+    "rating": rating.options[rating.selectedIndex].value,
+  }, err => {
+    console.log(err)
+  }).then(data => {
     console.log(data)
     const reviewList = document.querySelector('#reviews-list');
     reviewList.appendChild(createReviewHTML(data));
     reviewForm.reset()
-  }).catch(err=> {
+  }).catch(err => {
     console.error(err)
   })
 
@@ -238,5 +247,28 @@ reviewForm.addEventListener("submit",(event)=>{
 window.addEventListener('online', e => {
   e.preventDefault();
   DBHelper.processOfflineReview();
+  DBHelper.processOfflinefav();
 })
 
+
+const favlink = document.querySelector('#restaurant-markfav');
+favlink.addEventListener('click', (e) => {
+  e.preventDefault();
+  let fav = false;
+  if (e.target.dataset.fav == "true") {
+    e.target.classList.remove("star-selected");
+    e.target.classList.add("star-unselected");
+    e.target.dataset.fav = "false"
+  } else {
+    e.target.classList.remove("star-unselected");
+    e.target.classList.add("star-selected");
+    e.target.dataset.fav = "true"
+    fav = true
+  }
+  const id = getParameterByName("id")
+  DBHelper.PostFavAPI(parseInt(id), fav, (err, _) => {
+    if (err) {
+      console.log(err)
+    }
+  })
+})

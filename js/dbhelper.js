@@ -26,6 +26,7 @@ class DBHelper {
       storereview.createIndex('restaurant_id', 'restaurant_id');
     
       upgradeDatabase.createObjectStore('reviewoffline',{ keyPath: 'updatedAt' });
+      upgradeDatabase.createObjectStore('favupdate',{ keyPath: 'id' });
       
     })
   }
@@ -293,7 +294,7 @@ class DBHelper {
       cb(null,data)
       return data;
     })
-    .catch(err=> cb(e,null))
+    .catch(err=> cb(err,null))
   }
 
   static fetchCachedReviews(id) {
@@ -349,14 +350,45 @@ class DBHelper {
         cursor.delete()
         return cursor.continue().then(postdata);
       });
-      // req.onsuccess = function(event) {
-      //   console.log(event)
-      //   //addReview(event)
-      //   store.delete(cursor.key);
-      //   cursor.continue();
-      // }
-      // request.onsuccess();
+
     });
+  }
+
+  static processOfflinefav(){
+    DBHelper.openDatabase().then(db => {
+    const tx =
+        db.transaction('favupdate', 'readwrite')
+      const store = tx.objectStore('favupdate')
+      store.openCursor().then(function postdata(cursor) {
+        if (!cursor) return;
+        DBHelper.PostFavAPI(cursor.key,cursor.value.fav,err=>{
+          console.log(err);
+        })
+        cursor.delete()
+        return cursor.continue().then(postdata);
+      });
+
+    });
+  }
+
+  static PostFavAPI(restaurantid,fav,cb){
+    return fetch(`http://localhost:1337/restaurants/${restaurantid}/?is_favorite=${fav}`,{
+      method:"PUT"
+    }).then(
+      res=> res.json()
+    ).then(data=>{
+      DBHelper.savedatatodb([data]);
+      cb(null,data)
+      return data;
+    })
+    .catch(err=> {
+      DBHelper.fetchRestaurantById(restaurantid,(err,data)=>{
+        data.is_favorite= fav;
+        DBHelper.savedatatodb([data]);
+      })
+      DBHelper.savedatatoIDB({id:restaurantid,fav:fav},"favupdate")
+      cb(err,null)
+    })
   }
 }
 
